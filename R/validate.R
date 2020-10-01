@@ -12,12 +12,10 @@
 #' @examples validate_df(df)
 validate_df <- function(df){
   df %>%
-    verify(has_all_names("cam", "datetime", "count", "area")) %>%
+    verify(has_all_names("cam", "datetime", "count")) %>%
     verify(lubridate::is.POSIXct(datetime)) %>% 
     verify(is.numeric(count)) %>% 
-    verify(count >= 0) %>% 
-    verify(is.numeric(area)) %>% 
-    verify(area >= 0)
+    verify(count >= 0)
 }
 
 
@@ -52,7 +50,10 @@ validate_start_end <- function(x){
 #' @examples validate_deploy(deploy)
 validate_deploy <- function(deploy){
   deploy %>% 
-    verify(has_all_names("cam", "start", "end")) %>%
+    verify(has_all_names("cam", "start", "end", "area")) %>% 
+    # Check class of all columns
+    verify(is.numeric(area)) %>% 
+    verify(area >= 0) %>%
     # Check start and end
     validate_start_end(.)
   
@@ -84,17 +85,15 @@ validate_df_deploy <- function(df, deploy){
   
   # Fail if a camera took a photo but that time is not in deploy
   # Very similar function to find_overlap. Work on that in future
-  pic_in_deploy <- deploy %>%
-    add_int(.) %>% 
-    select(cam, int) %>% 
-    left_join(df, ., by = "cam") %>% 
-    group_by(cam) %>% 
-    mutate(chk = list(int)) %>% 
-    mutate(exist = datetime %within% chk) %>% 
-    select(-chk) %>% 
-    summarise(allgood = any(exist)) %>%
-    filter(allgood == F | is.na(allgood))
-  if(nrow(pic_in_deploy) > 0) stop(paste("There are photos at cam", pic_in_deploy$cam, "outside intervals specified in deploy"))
+  pic_in_deploy <- left_join(df, deploy, by = "cam") %>% 
+      mutate(wthn = datetime >= start & datetime <= end) %>% 
+      group_by(cam) %>% 
+      summarise(allgood = any(wthn)) %>%
+      filter(allgood == F | is.na(allgood))
+  
+  if(nrow(pic_in_deploy) > 0) stop(paste("There are photos at cam", 
+                                         pic_in_deploy$cam, 
+                                         "outside intervals specified in deploy"))
   
 }
 

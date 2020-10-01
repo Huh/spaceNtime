@@ -1,5 +1,19 @@
 
 #' To do
+#' 
+#' Look at tte_build_eh and make sure it works 
+#' Change all intervals to rounding if possible. 
+#' hide internal functions 
+#' GitHub pages for the vignette. 
+#' estNfn output density, make abundance a separate function 
+#' ste_calc_toevent doesn't need occ in function call 
+#' tte_estN_fn is basically the same as ste_estn_fn
+#' Bootstrap function for STE (using random sampling for occasions?)
+#' Speed up tte_build_eh to match STE
+#' 
+#' 
+#' 
+#' 
 #' What does ste_estN_fn do if censor = 0? It doesn't fail... Is this good? 
 #' 
 #' Test that version 2 of deploy actually works. 
